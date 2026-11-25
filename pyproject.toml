@@ -1,0 +1,20 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "timak"
+version = "1.1.0"
+description = "Extract user files from old Time Machine backups into a compact hard-linked snapshot archive"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = []
+
+[project.scripts]
+timak = "timak.cli:main"
+
+[tool.setuptools]
+packages = ["timak", "timak.sources"]
+
+[tool.setuptools.package-data]
+timak = ["default_rules.toml", "web/*"]

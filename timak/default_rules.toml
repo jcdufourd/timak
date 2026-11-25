@@ -1,0 +1,73 @@
+# timak default rules — copy this file (`timak rules > my-rules.toml`) and edit.
+#
+# Only the trees listed in `roots` are looked at; /Applications, /System,
+# /Library, /opt/homebrew, /usr/local, /private ... are therefore dropped.
+# `[volume_roots]` at the end sets other roots for particular volumes.
+# Inside the roots, the first matching rule wins and unmatched paths are kept.
+# Syntax: see timak/rules.py ("~/" = "/Users/*/", trailing "/" = directories only).
+
+roots = ["/Users"]
+case_sensitive = false
+
+rules = [
+    # --- applications and package managers inside home folders ---
+    "- ~/Applications/",
+    "- ~/.Trash/",
+    "- /Users/Shared/Adobe/",
+
+    # --- caches, logs, rebuildable state in ~/Library ---
+    "- ~/Library/Caches/",
+    "- ~/Library/Logs/",
+    "- ~/Library/Developer/",            # Xcode DerivedData, simulators, device support
+    "- ~/Library/Containers/*/Data/Library/Caches/",
+    "- ~/Library/Group Containers/*/Library/Caches/",
+    "- ~/Library/Saved Application State/",
+    "- ~/Library/Metadata/CoreSpotlight/",
+    "- ~/Library/Application Support/Steam/",
+    "- ~/Library/Application Support/Google/Chrome/*/Service Worker/CacheStorage/",
+    "- ~/Library/Application Support/Code/Cache*/",
+    "- ~/Library/Application Support/Code/User/workspaceStorage/",
+    "- ~/Library/Android/sdk/",
+    "- ~/Library/Python/",               # pip --user installs
+    # "- ~/Library/Application Support/MobileSync/Backup/",  # iPhone backups: big, but maybe precious
+    # "- ~/Library/Mail/",                                    # keep by default
+
+    # --- developer tool caches and toolchains in dot folders ---
+    "- ~/.cache/",
+    "- ~/.npm/",
+    "- ~/.yarn/cache/",
+    "- ~/.pnpm-store/",
+    "- ~/.gradle/caches/",
+    "- ~/.m2/repository/",
+    "- ~/.cargo/registry/",
+    "- ~/.rustup/",
+    "- ~/.pyenv/versions/",
+    "- ~/.rbenv/versions/",
+    "- ~/.nvm/versions/",
+    "- ~/.docker/",
+
+    # --- macOS bookkeeping at the top of a disk (matters for volumes kept whole) ---
+    "- /.Spotlight-V100/",
+    "- /.fseventsd/",
+    "- /.Trashes/",
+    "- /.DocumentRevisions-V100/",
+    "- /.TemporaryItems/",
+    "- /.MobileBackups/",
+    "- /.PKInstallSandboxManager/",
+    "- /.PKInstallSandboxManager-SystemSoftware/",
+
+    # --- anywhere in the tree ---
+    "- node_modules/",
+    "- __pycache__/",
+    "- .DS_Store",
+    # "- .venv/",          # virtualenvs are rebuildable; uncomment to drop them
+    # "- *.vmwarevm/",     # virtual machines
+    # "- *.pvm/",
+]
+
+# Other roots for some backed-up volumes, by name (as `timak list` shows them).
+# Typically external disks that Time Machine also backed up and that hold
+# only user files. The rules above still apply inside them. [] skips a volume.
+[volume_roots]
+# Large = ["/"]
+# "Old Disk" = []

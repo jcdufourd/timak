@@ -1,0 +1,731 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>timak</title>
+<style>
+:root {
+  --bg: #f6f6f3; --panel: #ffffff; --panel-2: #f0efea; --text: #1d1d1b; --muted: #6b6a64; --line: #dddcd5;
+  --accent: #2f5fd0; --accent-text: #ffffff; --ok: #1d7a46; --warn: #a15c00; --warn-bg: #fff4e0; --err: #b3261e;
+  --err-bg: #fdeceb; --ok-bg: #e7f5ec; --code: #fbfbf9; --focus: #2f5fd055;
+  --mono: ui-monospace, "SF Mono", Menlo, monospace;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #161615; --panel: #1f1f1d; --panel-2: #282826; --text: #ecebe6; --muted: #9a998f; --line: #34342f;
+    --accent: #7ea2ff; --accent-text: #0d1430; --ok: #6fd39a; --warn: #f0b45a; --warn-bg: #3a2c12; --err: #ff8a80;
+    --err-bg: #3d1b19; --ok-bg: #173323; --code: #181817; --focus: #7ea2ff55;
+    color-scheme: dark;
+  }
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--text); font: 14px/1.45 -apple-system, BlinkMacSystemFont, "Helvetica Neue", sans-serif; }
+header { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; padding: 14px 24px; border-bottom: 1px solid var(--line); background: var(--panel); position: sticky; top: 0; z-index: 5; }
+header .logo { width: 32px; height: 32px; margin: -4px -6px -4px -4px; }
+header h1 { font-size: 18px; margin: 0; letter-spacing: -0.01em; }
+header .version { color: var(--muted); font-size: 12px; }
+.help-btn { font-size: 13px; font-weight: 600; padding: 5px 13px; border-radius: 6px; border: 1px solid var(--line); background: var(--panel-2); color: var(--text); text-decoration: none; white-space: nowrap; }
+.help-btn:hover { border-color: var(--muted); }
+.muted { color: var(--muted); font-size: 13px; }
+.chips { display: flex; gap: 6px; flex-wrap: wrap; margin-left: auto; }
+.chip { font-size: 12px; padding: 2px 9px; border-radius: 999px; border: 1px solid var(--line); background: var(--panel-2); white-space: nowrap; }
+.chip.ok { color: var(--ok); background: var(--ok-bg); border-color: transparent; }
+.chip.bad { color: var(--warn); background: var(--warn-bg); border-color: transparent; }
+main { max-width: 1180px; margin: 0 auto; padding: 20px 24px 60px; }
+.card { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 18px 20px; }
+h2 { font-size: 15px; margin: 0 0 12px; }
+h3 { font-size: 14px; margin: 18px 0 8px; }
+label { display: block; font-weight: 600; font-size: 12px; color: var(--muted); margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.04em; }
+.field { margin-bottom: 14px; }
+.row { display: flex; gap: 8px; align-items: center; }
+.row > input { flex: 1; min-width: 0; }
+.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0 20px; }
+.grid3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0 20px; }
+input[type=text], textarea { width: 100%; font: inherit; color: var(--text); background: var(--code); border: 1px solid var(--line); border-radius: 6px; padding: 7px 9px; }
+textarea { font-family: var(--mono); font-size: 12.5px; resize: vertical; }
+input:focus, textarea:focus, button:focus-visible, summary:focus-visible { outline: 2px solid var(--focus); outline-offset: 1px; }
+button { font: inherit; padding: 6px 13px; border-radius: 6px; border: 1px solid var(--line); background: var(--panel-2); color: var(--text); cursor: pointer; white-space: nowrap; }
+button:hover:not(:disabled) { border-color: var(--muted); }
+button.primary { background: var(--accent); color: var(--accent-text); border-color: transparent; font-weight: 600; }
+button.danger { color: var(--err); }
+button:disabled { opacity: 0.5; cursor: default; }
+button.link { background: none; border: none; padding: 0 4px; color: var(--muted); }
+.check { display: inline-flex; gap: 6px; align-items: center; font-weight: normal; text-transform: none; letter-spacing: 0; font-size: 13px; color: var(--text); margin: 0 14px 0 0; cursor: pointer; }
+details summary { cursor: pointer; color: var(--muted); font-size: 13px; margin: 4px 0 12px; }
+.hint { color: var(--muted); font-size: 12px; margin-top: 4px; }
+ul.sources { list-style: none; margin: 0 0 8px; padding: 0; }
+ul.sources li { display: flex; align-items: center; gap: 8px; padding: 6px 10px; border: 1px solid var(--line); border-radius: 6px; margin-bottom: 6px; background: var(--code); font-family: var(--mono); font-size: 12.5px; }
+ul.sources li span { flex: 1; overflow-wrap: anywhere; }
+ul.sources li.empty { font-family: inherit; color: var(--muted); border-style: dashed; background: none; }
+nav.tabs { display: flex; gap: 2px; margin: 22px 0 0; border-bottom: 1px solid var(--line); overflow-x: auto; }
+nav.tabs button { border: none; border-radius: 6px 6px 0 0; background: none; padding: 9px 16px; color: var(--muted); border-bottom: 2px solid transparent; }
+nav.tabs button[aria-selected=true] { color: var(--text); border-bottom-color: var(--accent); font-weight: 600; }
+.tab { display: none; padding-top: 16px; }
+.tab.active { display: block; }
+.toolbar { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-bottom: 12px; }
+.toolbar .spacer { flex: 1; }
+.msg { padding: 9px 12px; border-radius: 6px; margin-bottom: 10px; font-size: 13px; overflow-wrap: anywhere; white-space: pre-wrap; }
+.msg.warn { background: var(--warn-bg); color: var(--warn); }
+.msg.err { background: var(--err-bg); color: var(--err); }
+.msg.ok { background: var(--ok-bg); color: var(--ok); }
+.msg.info { background: var(--panel-2); color: var(--muted); }
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+th { text-align: left; font-size: 11px; text-transform: uppercase; letter-spacing: 0.04em; color: var(--muted); font-weight: 600; padding: 6px 10px; border-bottom: 1px solid var(--line); }
+td { padding: 6px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+td.mono { font-family: var(--mono); font-size: 12.5px; white-space: nowrap; }
+.table-wrap { overflow-x: auto; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; margin-bottom: 16px; }
+.table-wrap table tr:last-child td { border-bottom: none; }
+.vol { display: inline-block; font-size: 12px; padding: 1px 8px; border-radius: 4px; margin: 1px 4px 1px 0; background: var(--panel-2); color: var(--muted); }
+.vol.sel { background: var(--ok-bg); color: var(--ok); font-weight: 600; }
+.tag { font-size: 11px; padding: 1px 7px; border-radius: 4px; background: var(--panel-2); color: var(--muted); }
+.tag.warn { background: var(--warn-bg); color: var(--warn); }
+.tag.err { background: var(--err-bg); color: var(--err); }
+.ratio { display: inline-flex; align-items: center; gap: 6px; }
+.ratio .bar { width: 60px; height: 6px; border-radius: 3px; background: var(--panel-2); overflow: hidden; }
+.ratio .bar i { display: block; height: 100%; background: var(--ok); }
+.ratio.low .bar i { background: var(--warn); }
+.actions { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 12px; margin-bottom: 16px; }
+.action { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 14px; display: flex; flex-direction: column; gap: 8px; }
+.action p { margin: 0; color: var(--muted); font-size: 12.5px; flex: 1; }
+.action .opts { min-height: 22px; }
+.console { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
+.console-head { display: flex; align-items: center; gap: 10px; padding: 10px 14px; border-bottom: 1px solid var(--line); flex-wrap: wrap; }
+.console-head code { font-family: var(--mono); font-size: 12px; color: var(--muted); overflow-wrap: anywhere; flex: 1; min-width: 200px; }
+.status { font-size: 12px; font-weight: 600; padding: 2px 9px; border-radius: 999px; background: var(--panel-2); color: var(--muted); }
+.status.running, .status.stopping { background: var(--accent); color: var(--accent-text); }
+.status.done { background: var(--ok-bg); color: var(--ok); }
+.status.problems, .status.stopped { background: var(--warn-bg); color: var(--warn); }
+.status.failed { background: var(--err-bg); color: var(--err); }
+.steps { display: flex; flex-wrap: wrap; gap: 4px; padding: 8px 14px; border-top: 1px solid var(--line); }
+.steps[hidden] { display: none; }
+.steps i { width: 10px; height: 10px; border-radius: 50%; background: var(--line); }
+.steps i.done { background: var(--ok); }
+.steps i.skipped { background: var(--ok); opacity: 0.4; }
+.steps i.current { background: var(--accent); animation: pulse 1.2s ease-in-out infinite; }
+.steps i.stopped { background: var(--warn); }
+.steps i.failed { background: var(--err); }
+@keyframes pulse { 50% { opacity: 0.35; } }
+@media (prefers-reduced-motion: reduce) { .steps i.current { animation: none; } }
+.progress { height: 3px; background: var(--panel-2); }
+.progress i { display: block; height: 100%; width: 0; background: var(--accent); transition: width .4s; }
+pre.log { margin: 0; padding: 12px 14px; height: 420px; overflow: auto; font: 12px/1.5 var(--mono); background: var(--code); white-space: pre-wrap; overflow-wrap: anywhere; }
+tr.problems td { background: var(--err-bg); }
+tr.problems ul { margin: 6px 0 2px; padding-left: 18px; font: 12px/1.5 var(--mono); overflow-wrap: anywhere; }
+button.tag { border: none; font: inherit; font-size: 11px; cursor: pointer; }
+pre.log .warn { color: var(--warn); }
+pre.log .err { color: var(--err); }
+pre.log .step { color: var(--accent); font-weight: 600; }
+.editor-status { font-size: 13px; }
+.editor-status.ok { color: var(--ok); }
+.editor-status.err { color: var(--err); }
+#rules-text { min-height: 520px; line-height: 1.5; tab-size: 4; }
+dialog { border: 1px solid var(--line); border-radius: 12px; padding: 0; width: min(680px, calc(100vw - 32px)); background: var(--panel); color: var(--text); }
+dialog::backdrop { background: #0006; }
+.dlg-head { padding: 14px 16px; border-bottom: 1px solid var(--line); }
+.dlg-head .path { font-family: var(--mono); font-size: 12px; color: var(--muted); overflow-wrap: anywhere; margin-top: 4px; }
+.dlg-places { display: flex; gap: 6px; padding: 8px 16px; border-bottom: 1px solid var(--line); flex-wrap: wrap; }
+.dlg-list { height: 340px; overflow: auto; padding: 6px 0; }
+.dlg-list button { display: flex; width: 100%; text-align: left; border: none; border-radius: 0; background: none; padding: 6px 16px; gap: 8px; }
+.dlg-list button:hover, .dlg-list button.chosen { background: var(--panel-2); }
+.dlg-list .ico { width: 18px; color: var(--muted); }
+.dlg-foot { display: flex; gap: 8px; padding: 12px 16px; border-top: 1px solid var(--line); align-items: center; flex-wrap: wrap; }
+.dlg-foot input { flex: 1; min-width: 160px; }
+.empty-state { color: var(--muted); padding: 30px 0; text-align: center; }
+.totals { display: flex; gap: 24px; flex-wrap: wrap; margin: 4px 0 14px; }
+.totals div { font-size: 12px; color: var(--muted); }
+.totals b { display: block; font-size: 18px; color: var(--text); font-variant-numeric: tabular-nums; }
+.spinner { display: inline-block; width: 12px; height: 12px; border: 2px solid var(--line); border-top-color: var(--accent); border-radius: 50%; animation: spin .8s linear infinite; vertical-align: -2px; }
+@keyframes spin { to { transform: rotate(360deg); } }
+@media (max-width: 760px) {
+  header, main { padding-left: 16px; padding-right: 16px; }
+  .grid2, .grid3 { grid-template-columns: 1fr; }
+  .chips { margin-left: 0; }
+}
+</style>
+</head>
+<body>
+<header>
+  <img class="logo" src="/icon.svg" alt=""><h1>timak</h1><span class="version" id="version"></span>
+  <div class="chips" id="chips"></div>
+  <a class="help-btn" href="/help.html" target="_blank" title="How to use Timak, step by step">Help</a>
+</header>
+<main>
+  <div id="global-msg"></div>
+
+  <section class="card" aria-labelledby="setup-title">
+    <h2 id="setup-title">Backups and archive</h2>
+    <div class="field">
+      <label>Sources</label>
+      <ul class="sources" id="sources"></ul>
+      <div class="row">
+        <input type="text" id="source-input" placeholder="e.g. /Volumes/Backups/old-tm.dmg" aria-label="Source path">
+        <button data-browse="source">Browse…</button>
+        <button id="add-source">Add</button>
+      </div>
+      <div class="hint">Disk images, mounted backup drives, Backups.backupdb folders, or snapshot folders copied out of Time Machine.</div>
+    </div>
+    <div class="grid2">
+      <div class="field">
+        <label for="archive">Archive folder</label>
+        <div class="row"><input type="text" id="archive" placeholder="e.g. /Volumes/Archive/tm"><button data-browse="archive">Browse…</button></div>
+      </div>
+      <div class="field">
+        <label for="rules">Rules file</label>
+        <div class="row"><input type="text" id="rules" placeholder="empty = built-in rules"><button data-browse="rules">Browse…</button></div>
+      </div>
+    </div>
+    <details id="more">
+      <summary>More options</summary>
+      <div class="grid3">
+        <div class="field"><label for="opt-machine">Machine</label><input type="text" id="opt-machine"><div class="hint">Legacy backups: pick this machine. APFS and folders: name to use.</div></div>
+        <div class="field"><label for="opt-volumes">Volumes</label><input type="text" id="opt-volumes" placeholder="all volumes with a root"><div class="hint">Comma-separated names.</div></div>
+        <div class="field"><label for="opt-stamp">Date of copied folder</label><input type="text" id="opt-stamp" placeholder="e.g. 2024-10-29"><div class="hint">Only for a folder whose name has no date.</div></div>
+        <div class="field"><label for="opt-since">Since</label><input type="text" id="opt-since" placeholder="e.g. 2015-01-01"></div>
+        <div class="field"><label for="opt-until">Until</label><input type="text" id="opt-until" placeholder="e.g. 2020-12-31"></div>
+        <div class="field"><label for="opt-last">Last N per machine</label><input type="text" id="opt-last" inputmode="numeric"></div>
+      </div>
+      <div class="grid2">
+        <div class="field"><label for="opt-rename-volumes">Rename volumes</label><textarea id="opt-rename-volumes" rows="2" placeholder="e.g. Macintosh HD=System"></textarea><div class="hint">One OLD=NEW per line, to line up volumes across backups.</div></div>
+        <div class="field"><label for="opt-rename-machines">Rename machines</label><textarea id="opt-rename-machines" rows="2" placeholder="e.g. MacBook Pro=OldMac"></textarea><div class="hint">One OLD=NEW per line, for a Mac that was renamed.</div></div>
+      </div>
+      <label class="check"><input type="checkbox" id="opt-in-progress"> Also use unfinished (.inProgress) backups</label>
+    </details>
+  </section>
+
+  <nav class="tabs" role="tablist">
+    <button role="tab" data-tab="snapshots" aria-selected="true">Snapshots</button>
+    <button role="tab" data-tab="rules-tab" aria-selected="false">Rules</button>
+    <button role="tab" data-tab="run" aria-selected="false">Run</button>
+    <button role="tab" data-tab="archive-tab" aria-selected="false">Archive</button>
+  </nav>
+
+  <section class="tab active" id="snapshots" role="tabpanel">
+    <div class="toolbar">
+      <button class="primary" id="list-btn">List snapshots</button>
+      <span class="hint" id="list-status"></span>
+    </div>
+    <div id="list-out"><div class="empty-state">Add a source, then list its snapshots to see what timak finds and which volumes it would extract.</div></div>
+  </section>
+
+  <section class="tab" id="rules-tab" role="tabpanel">
+    <div class="toolbar">
+      <button id="rules-reload">Reload from file</button>
+      <button id="rules-builtin">Start from built-in rules</button>
+      <span class="spacer"></span>
+      <button class="primary" id="rules-save">Save</button>
+    </div>
+    <div class="editor-status" id="rules-status" style="margin-bottom:6px"></div>
+    <div class="hint" id="rules-path" style="margin-bottom:8px"></div>
+    <textarea id="rules-text" spellcheck="false" aria-label="Rules file contents"></textarea>
+    <div class="hint">First matching rule wins; anything under a root that matches no rule is kept. <code>~/</code> means every home folder, a trailing <code>/</code> matches folders only, a leading <code>/</code> anchors at the top of the volume. Put <code>[volume_roots]</code> at the end of the file.</div>
+  </section>
+
+  <section class="tab" id="run" role="tabpanel">
+    <div class="actions">
+      <div class="action">
+        <button class="primary" data-run="scan">Scan</button>
+        <p>Dry run: how much each rule keeps and drops. Nothing is written.</p>
+        <div class="opts"><label class="check"><input type="checkbox" id="run-kept-only"> Kept files only (faster)</label></div>
+      </div>
+      <div class="action">
+        <button class="primary" data-run="extract">Extract</button>
+        <p>Copy kept files into the archive, hard-linking unchanged ones. Can be stopped and resumed.</p>
+        <div class="opts"></div>
+      </div>
+      <div class="action">
+        <button data-run="verify">Verify</button>
+        <p>Check the archive against the sources.</p>
+        <div class="opts"><label class="check"><input type="checkbox" id="run-content"> Compare contents (slow)</label></div>
+      </div>
+      <div class="action">
+        <button data-run="dedupe">Dedupe</button>
+        <p>Hard-link identical files across the whole archive (moved files, overlapping drives).</p>
+        <div class="opts"><label class="check"><input type="checkbox" id="run-dry" checked> Dry run</label><label class="check"><input type="checkbox" id="run-loose"> Content only</label></div>
+      </div>
+      <div class="action">
+        <button data-run="prune">Prune</button>
+        <p>Remove from the archived snapshots what your rules file now drops, then list what went. Needs the rules file above.</p>
+        <div class="opts"><label class="check"><input type="checkbox" id="run-prune-dry" checked> Dry run</label></div>
+      </div>
+      <div class="action">
+        <button data-run="biggest">Biggest</button>
+        <p>The biggest files and folders of the archive, each file counted once, with rules to drop them. Only reads.</p>
+        <div class="opts"></div>
+      </div>
+      <div class="action">
+        <button data-run="kinds">Kinds</button>
+        <p>How much space mail, documents, images, videos, music and the rest take, each file counted once. Only reads.</p>
+        <div class="opts"></div>
+      </div>
+      <div class="action">
+        <button data-run="compare">Compare</button>
+        <p>What merging another archive into this one would take, dedupe included. Both are only read. Follows Dedupe’s “Content only”.</p>
+        <div class="opts"><div class="row"><input type="text" id="other-archive" placeholder="other archive folder" aria-label="Other archive folder"><button data-browse="other-archive">Browse…</button></div></div>
+      </div>
+      <div class="action">
+        <button data-run="du">Disk usage</button>
+        <p>Real size of the archive, hard-linked files counted once.</p>
+        <div class="opts"></div>
+      </div>
+    </div>
+    <div class="console">
+      <div class="console-head">
+        <span class="status" id="job-status">idle</span>
+        <code id="job-cmd">No command has run yet.</code>
+        <span class="hint" id="job-time"></span>
+        <button class="danger" id="job-stop" disabled>Stop</button>
+      </div>
+      <div class="steps" id="job-steps" hidden aria-label="Snapshots"></div>
+      <div class="progress"><i id="job-progress"></i></div>
+      <pre class="log" id="job-log" aria-live="polite"></pre>
+    </div>
+  </section>
+
+  <section class="tab" id="archive-tab" role="tabpanel">
+    <div class="toolbar">
+      <button class="primary" id="archive-refresh">Refresh</button>
+      <span class="hint" id="archive-status"></span>
+    </div>
+    <div id="archive-out"><div class="empty-state">Set the archive folder above, then refresh.</div></div>
+  </section>
+</main>
+
+<dialog id="picker">
+  <div class="dlg-head"><b id="picker-title">Choose</b><div class="path" id="picker-path"></div></div>
+  <div class="dlg-places" id="picker-places"></div>
+  <div class="dlg-list" id="picker-list"></div>
+  <div class="dlg-foot">
+    <input type="text" id="picker-name" placeholder="file name, e.g. my-rules.toml" aria-label="File name">
+    <span class="spacer" style="flex:1"></span>
+    <button id="picker-cancel">Cancel</button>
+    <button class="primary" id="picker-ok">Choose</button>
+  </div>
+</dialog>
+
+<script>
+"use strict";
+const $ = (id) => document.getElementById(id);
+const TOKEN = (() => {
+  const m = location.hash.match(/token=([\w-]+)/);
+  try { if (m) sessionStorage.setItem("timak-token", m[1]); return m ? m[1] : sessionStorage.getItem("timak-token"); }
+  catch { return m && m[1]; }
+})();
+
+async function api(path, body) {
+  const opts = { headers: { "X-Timak-Token": TOKEN || "" } };
+  if (body !== undefined) { opts.method = "POST"; opts.headers["Content-Type"] = "application/json"; opts.body = JSON.stringify(body); }
+  let res;
+  try { res = await fetch(path, opts); }
+  catch { throw new Error("cannot reach timak: is `timak serve` still running in its terminal?"); }
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
+  return data;
+}
+
+function el(tag, attrs = {}, ...children) {
+  const e = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs)) {
+    if (k === "class") e.className = v; else if (k.startsWith("on")) e.addEventListener(k.slice(2), v); else e.setAttribute(k, v);
+  }
+  for (const c of children.flat()) if (c != null) e.append(c instanceof Node ? c : document.createTextNode(String(c)));
+  return e;
+}
+const msg = (kind, text) => el("div", { class: `msg ${kind}` }, text);
+function human(n) {
+  if (n == null) return "–";
+  for (const u of ["B", "KB", "MB", "GB", "TB"]) { if (Math.abs(n) < 1000 || u === "TB") return u === "B" ? `${n} B` : `${n.toFixed(1)} ${u}`; n /= 1000; }
+}
+const fmt = (n) => n == null ? "–" : n.toLocaleString();
+const stampText = (s) => s.replace(/^(\d{4}-\d{2}-\d{2})-(\d{2})(\d{2})(\d{2})$/, "$1 $2:$3:$4");
+
+// --- settings, kept in this browser -------------------------------------------
+const FIELDS = { archive: "archive", rules: "rules", machine: "opt-machine", volumes: "opt-volumes", stamp: "opt-stamp",
+  since: "opt-since", until: "opt-until", last: "opt-last", rename_volumes: "opt-rename-volumes", rename_machines: "opt-rename-machines",
+  other_archive: "other-archive" };
+let sources = [];
+function save() {
+  const s = { sources, in_progress: $("opt-in-progress").checked };
+  for (const [k, id] of Object.entries(FIELDS)) s[k] = $(id).value;
+  try { localStorage.setItem("timak-settings", JSON.stringify(s)); } catch {}
+}
+function load() {
+  let s = {};
+  try { s = JSON.parse(localStorage.getItem("timak-settings") || "{}"); } catch {}
+  sources = Array.isArray(s.sources) ? s.sources : [];
+  for (const [k, id] of Object.entries(FIELDS)) if (typeof s[k] === "string") $(id).value = s[k];
+  $("opt-in-progress").checked = !!s.in_progress;
+  if (Object.entries(FIELDS).some(([k, id]) => !["archive", "rules", "other_archive"].includes(k) && $(id).value.trim()) || s.in_progress) $("more").open = true;
+  renderSources();
+}
+function options() {
+  const lines = (id) => $(id).value.split("\n").map((x) => x.trim()).filter(Boolean);
+  return {
+    sources, archive: $("archive").value.trim(), other_archive: $("other-archive").value.trim(), rules: $("rules").value.trim(), machine: $("opt-machine").value.trim(),
+    volumes: $("opt-volumes").value.split(",").map((x) => x.trim()).filter(Boolean), stamp: $("opt-stamp").value.trim(),
+    since: $("opt-since").value.trim(), until: $("opt-until").value.trim(), last: $("opt-last").value.trim(),
+    rename_volumes: lines("opt-rename-volumes"), rename_machines: lines("opt-rename-machines"),
+    include_in_progress: $("opt-in-progress").checked,
+    kept_only: $("run-kept-only").checked, content: $("run-content").checked, dry_run: $("run-dry").checked, loose: $("run-loose").checked,
+    apply: !$("run-prune-dry").checked,
+  };
+}
+document.querySelectorAll("main input, main textarea").forEach((i) => { if (i.id !== "rules-text") i.addEventListener("change", save); });
+
+function renderSources() {
+  const ul = $("sources");
+  ul.replaceChildren();
+  if (!sources.length) ul.append(el("li", { class: "empty" }, "No sources yet."));
+  sources.forEach((s, i) => ul.append(el("li", {}, el("span", {}, s),
+    el("button", { class: "link", title: "Remove", "aria-label": `Remove ${s}`, onclick: () => { sources.splice(i, 1); renderSources(); save(); } }, "✕"))));
+}
+function addSource(path) {
+  path = (path || "").trim();
+  if (path && !sources.includes(path)) { sources.push(path); renderSources(); save(); }
+}
+$("add-source").onclick = () => { addSource($("source-input").value); $("source-input").value = ""; };
+$("source-input").addEventListener("keydown", (e) => { if (e.key === "Enter") $("add-source").click(); });
+
+// --- tabs --------------------------------------------------------------------------
+function showTab(id) {
+  document.querySelectorAll("nav.tabs button").forEach((b) => b.setAttribute("aria-selected", b.dataset.tab === id));
+  document.querySelectorAll(".tab").forEach((t) => t.classList.toggle("active", t.id === id));
+  try { localStorage.setItem("timak-tab", id); } catch {}
+  if (id === "rules-tab" && !rulesLoaded) loadRules();
+  if (id === "archive-tab") refreshArchive();
+}
+document.querySelectorAll("nav.tabs button").forEach((b) => b.onclick = () => showTab(b.dataset.tab));
+
+// --- state chips --------------------------------------------------------------------
+async function loadState() {
+  const st = await api("/api/state");
+  $("version").textContent = "v" + st.version;
+  const chip = (ok, good, bad, title) => el("span", { class: `chip ${ok ? "ok" : "bad"}`, title }, ok ? good : bad);
+  $("chips").replaceChildren(
+    chip(st.root, "running as root", "not root", st.root ? "Owners are kept; APFS snapshots can be mounted." : "APFS backups need: sudo /opt/homebrew/bin/python3 -m timak serve"),
+    chip(st.fda, "Full Disk Access", "no Full Disk Access", st.fda ? "" : "Give Full Disk Access to the app that runs timak (Timak, or your terminal) in System Settings › Privacy & Security, then restart it."),
+    chip(!!st.rsync, "rsync 3", "rsync 3 missing", st.rsync || "brew install rsync"),
+  );
+  if (!$("rules").value && st.suggested_rules) { $("rules").value = st.suggested_rules; save(); }
+  return st;
+}
+
+// --- snapshots ------------------------------------------------------------------------
+$("list-btn").onclick = async () => {
+  const out = $("list-out"), btn = $("list-btn");
+  btn.disabled = true;
+  $("list-status").replaceChildren(el("span", { class: "spinner" }), " Reading backups… APFS snapshots are mounted one by one, this can take a minute.");
+  try {
+    const data = await api("/api/list", { options: options() });
+    out.replaceChildren();
+    for (const w of data.warnings) out.append(msg("warn", w.replace(/^warning: /, "")));
+    for (const l of data.log) if (/warning|error/i.test(l) && !/Full Disk Access/.test(l)) out.append(msg("info", l));
+    if (!data.snapshots.length) { out.append(el("div", { class: "empty-state" }, "No snapshots match these options.")); return; }
+    const byMachine = new Map();
+    for (const s of data.snapshots) { if (!byMachine.has(s.machine)) byMachine.set(s.machine, []); byMachine.get(s.machine).push(s); }
+    for (const [machine, snaps] of byMachine) {
+      out.append(el("h3", {}, `${machine} — ${snaps.length} snapshot${snaps.length > 1 ? "s" : ""}`));
+      const rows = snaps.map((s) => el("tr", {},
+        el("td", { class: "mono" }, stampText(s.stamp)),
+        el("td", {}, el("span", { class: "tag" }, s.kind), s.in_progress ? [" ", el("span", { class: "tag warn" }, "in progress")] : null),
+        el("td", {}, s.volumes.map((v) => el("span", { class: v.selected ? "vol sel" : "vol", title: v.selected ? "will be extracted" : "skipped" },
+          (v.selected ? "✓ " : "") + v.original_name + (v.name !== v.original_name ? ` → ${v.name}` : "")))),
+        el("td", { class: "hint" }, s.source.split("/").pop())));
+      out.append(el("div", { class: "table-wrap" }, el("table", {},
+        el("thead", {}, el("tr", {}, el("th", {}, "Snapshot"), el("th", {}, "Kind"), el("th", {}, "Volumes (✓ = extracted)"), el("th", {}, "Source"))),
+        el("tbody", {}, rows))));
+    }
+    $("list-status").textContent = `${data.snapshots.length} snapshots. Same as: ${data.argv.join(" ")}`;
+  } catch (e) {
+    out.replaceChildren(msg("err", e.message));
+    $("list-status").textContent = "";
+  } finally { btn.disabled = false; }
+};
+
+// --- rules editor -----------------------------------------------------------------------
+let rulesLoaded = false, rulesSaved = "", checkTimer = null;
+function setRulesStatus(kind, text) { const s = $("rules-status"); s.className = `editor-status ${kind}`; s.textContent = text; }
+async function loadRules() {
+  try {
+    const r = await api("/api/rules?path=" + encodeURIComponent($("rules").value.trim()));
+    $("rules-text").value = r.text;
+    rulesSaved = r.exists ? r.text : null;
+    rulesLoaded = true;
+    $("rules-path").textContent = !r.path ? "No rules file set above: showing the built-in rules. Set a rules file path to save your own."
+      : r.exists ? `Editing ${r.path}` : `${r.path} does not exist yet: starting from the built-in rules. Save to create it.`;
+    checkRules();
+  } catch (e) { setRulesStatus("err", e.message); }
+}
+async function checkRules() {
+  const text = $("rules-text").value;
+  try {
+    const r = await api("/api/rules/check", { text });
+    const dirty = text !== rulesSaved ? " · unsaved" : "";
+    if (r.ok) {
+      const vr = Object.entries(r.volume_roots).map(([k, v]) => `${k}: ${v.length ? v.join(", ") : "skipped"}`);
+      setRulesStatus("ok", `✓ ${r.rules} rules, roots ${r.roots.join(", ")}${vr.length ? "; volumes " + vr.join("; ") : ""}${dirty}`);
+    } else setRulesStatus("err", "✕ " + r.error + dirty);
+    return r.ok;
+  } catch (e) { setRulesStatus("err", e.message); return false; }
+}
+$("rules-text").addEventListener("input", () => { clearTimeout(checkTimer); checkTimer = setTimeout(checkRules, 500); });
+$("rules-text").addEventListener("keydown", (e) => {
+  if (e.key === "Tab") { e.preventDefault(); document.execCommand("insertText", false, "    "); }
+  if ((e.metaKey || e.ctrlKey) && e.key === "s") { e.preventDefault(); $("rules-save").click(); }
+});
+$("rules-reload").onclick = () => { if (dirtyOk()) loadRules(); };
+$("rules-builtin").onclick = async () => {
+  if (!dirtyOk()) return;
+  const r = await api("/api/rules?path=");
+  $("rules-text").value = r.text; checkRules();
+};
+$("rules").addEventListener("change", () => { rulesLoaded = false; if ($("rules-tab").classList.contains("active")) loadRules(); });
+const dirtyOk = () => $("rules-text").value === rulesSaved || !rulesLoaded || confirm("Discard unsaved changes to the rules?");
+$("rules-save").onclick = async () => {
+  const path = $("rules").value.trim();
+  if (!path) { setRulesStatus("err", "Set a rules file path above (e.g. ~/my-rules.toml) to save."); $("rules").focus(); return; }
+  try {
+    const r = await api("/api/rules/save", { path, text: $("rules-text").value });
+    rulesSaved = $("rules-text").value;
+    $("rules").value = r.path; save();
+    $("rules-path").textContent = `Editing ${r.path}`;
+    await checkRules();
+    setRulesStatus("ok", $("rules-status").textContent + " · saved");
+  } catch (e) { setRulesStatus("err", e.message); }
+};
+window.addEventListener("beforeunload", (e) => { if (rulesLoaded && rulesSaved !== null && $("rules-text").value !== rulesSaved) e.preventDefault(); });
+
+// --- jobs ----------------------------------------------------------------------------------
+let jobNext = 0, jobTimer = null, jobCommand = null, jobStarted = 0, jobEnded = null;
+const LABELS = { running: "running", stopping: "stopping…", done: "done", problems: "finished with problems", stopped: "stopped", failed: "failed" };
+function lineClass(l) {
+  if (/^\[\d+\/\d+\]/.test(l)) return "step";
+  if (/\berror|ERRORS|failed|Traceback/i.test(l)) return "err";
+  if (/warning|interrupted|skipped/i.test(l)) return "warn";
+  return null;
+}
+// one bullet per snapshot, from the "[i/n] …" lines that scan, extract and verify print
+let stepState = { total: 0, current: 0, labels: {}, skipped: new Set() };
+function trackSteps(lines) {
+  for (const l of lines) {
+    const m = l.match(/^\[(\d+)\/(\d+)\]\s*(.*)$/);
+    if (!m) continue;
+    const i = +m[1];
+    stepState.total = +m[2];
+    stepState.current = Math.max(stepState.current, i);
+    if (!stepState.labels[i]) stepState.labels[i] = m[3].split(": ")[0];  // "Mac 2024-10-29-000000: 5 linked, …"
+    if (/already in archive, skipped|, skipped$/.test(m[3])) stepState.skipped.add(i);
+  }
+}
+function renderSteps(status) {
+  const box = $("job-steps");
+  box.hidden = stepState.total < 2;
+  if (box.hidden) return;
+  const running = status === "running" || status === "stopping", finished = status === "done" || status === "problems";
+  while (box.children.length > stepState.total) box.lastChild.remove();
+  while (box.children.length < stepState.total) box.append(el("i", {}));
+  [...box.children].forEach((b, k) => {
+    const i = k + 1;
+    let state = "";
+    if (i < stepState.current || (i === stepState.current && finished)) state = stepState.skipped.has(i) ? "skipped" : "done";
+    else if (i === stepState.current) state = running ? "current" : status === "stopped" ? "stopped" : "failed";
+    b.className = state;
+    const word = { done: "done", skipped: "already in the archive", current: "in progress", stopped: "stopped", failed: "did not finish" }[state] || "to do";
+    b.title = `${i}/${stepState.total}: ${stepState.labels[i] || "snapshot " + i} (${word})`;
+  });
+}
+function showJob(j, append) {
+  if (j.status === "none") return;
+  const log = $("job-log");
+  const atBottom = log.scrollHeight - log.scrollTop - log.clientHeight < 40;
+  if (!append) { log.replaceChildren(); stepState = { total: 0, current: 0, labels: {}, skipped: new Set() }; }
+  trackSteps(j.lines);
+  renderSteps(j.status);
+  for (const l of j.lines) { const c = lineClass(l); log.append(c ? el("span", { class: c }, l) : l, "\n"); }
+  while (log.childNodes.length > 40000) log.firstChild.remove();
+  if (atBottom || !append) log.scrollTop = log.scrollHeight;
+  jobNext = j.next; jobCommand = j.command; jobStarted = j.started; jobEnded = j.ended;
+  $("job-status").className = `status ${j.status}`;
+  $("job-status").textContent = LABELS[j.status] || j.status;
+  $("job-cmd").textContent = j.argv.map((a) => /[\s'"]/.test(a) ? `'${a.replace(/'/g, "'\\''")}'` : a).join(" ");
+  const running = j.status === "running" || j.status === "stopping";
+  $("job-stop").disabled = !running || j.status === "stopping";
+  document.querySelectorAll("[data-run]").forEach((b) => b.disabled = running);
+  const steps = [...j.lines].reverse().find((l) => /^\[\d+\/\d+\]/.test(l));
+  if (steps) { const [, i, n] = steps.match(/^\[(\d+)\/(\d+)\]/); $("job-progress").style.width = `${(100 * (i - (running ? 0.5 : 0))) / n}%`; }
+  if (!running) $("job-progress").style.width = j.status === "done" ? "100%" : $("job-progress").style.width;
+  tickTime();
+}
+function tickTime() {
+  if (!jobStarted) return;
+  const s = Math.round((jobEnded || Date.now() / 1000) - jobStarted);
+  $("job-time").textContent = `${Math.floor(s / 3600) ? Math.floor(s / 3600) + "h " : ""}${Math.floor((s % 3600) / 60)}m ${s % 60}s`;
+}
+async function pollJob() {
+  clearTimeout(jobTimer);
+  try {
+    const j = await api(`/api/job?since=${jobNext}`);
+    showJob(j, true);
+    if (j.status === "running" || j.status === "stopping") jobTimer = setTimeout(pollJob, 1000);
+    else {
+      notifyDone(j);
+      if (["extract", "dedupe", "prune"].includes(j.command)) refreshArchive();
+    }
+  } catch (e) { $("job-time").textContent = e.message; jobTimer = setTimeout(pollJob, 3000); }
+}
+function notifyDone(j) {
+  document.title = `timak — ${j.command} ${LABELS[j.status] || j.status}`;
+  try { if (document.hidden && Notification.permission === "granted") new Notification(`timak ${j.command}: ${LABELS[j.status]}`); } catch {}
+}
+document.addEventListener("visibilitychange", () => { if (!document.hidden) document.title = "timak"; });
+document.querySelectorAll("[data-run]").forEach((b) => b.onclick = async () => {
+  const command = b.dataset.run;
+  if (command === "dedupe" && !$("run-dry").checked && !confirm("Dedupe will replace identical files in the archive with hard links. Continue?")) return;
+  if (command === "prune" && !$("run-prune-dry").checked && !confirm("Prune will delete from the archive everything your rules file now drops. This cannot be undone. Continue?")) return;
+  try {
+    try { if (Notification.permission === "default") Notification.requestPermission(); } catch {}
+    const j = await api("/api/run", { command, options: options() });
+    jobNext = 0;
+    showJob(j, false);
+    document.title = "timak";
+    pollJob();
+  } catch (e) { $("job-log").replaceChildren(el("span", { class: "err" }, e.message)); $("job-status").className = "status failed"; $("job-status").textContent = "not started"; }
+});
+$("job-stop").onclick = async () => { $("job-stop").disabled = true; await api("/api/stop", {}); pollJob(); };
+setInterval(tickTime, 1000);
+
+// --- archive --------------------------------------------------------------------------------
+async function refreshArchive() {
+  const path = $("archive").value.trim(), out = $("archive-out");
+  if (!path) { out.replaceChildren(el("div", { class: "empty-state" }, "Set the archive folder above, then refresh.")); return; }
+  try {
+    const a = await api("/api/archive?path=" + encodeURIComponent(path));
+    out.replaceChildren();
+    if (!a.exists) { out.append(el("div", { class: "empty-state" }, `${a.path} does not exist yet; Extract creates it (on an APFS disk, as ${a.path}.sparsebundle, a case-sensitive HFS+ disk image).`)); return; }
+    if (a.image) out.append(el("p", { class: "muted" }, `In the disk image ${a.image}.`));
+    if (!a.machines.length) { out.append(el("div", { class: "empty-state" }, "The archive is empty.")); return; }
+    for (const m of a.machines) {
+      const done = m.snapshots.filter((s) => !s.partial);
+      const sum = (k) => done.reduce((t, s) => t + ((s.stats || {})[k] || 0), 0);
+      out.append(el("h3", {}, m.name));
+      out.append(el("div", { class: "totals" },
+        el("div", {}, el("b", {}, done.length), "snapshots"),
+        el("div", {}, el("b", {}, human(sum("copied_bytes"))), "data written (before dedupe)"),
+        el("div", {}, el("b", {}, fmt(sum("errors"))), "unreadable files")));
+      const rows = m.snapshots.slice().reverse().flatMap((s) => {
+        const st = s.stats || {};
+        const total = (st.linked || 0) + (st.copied || 0);
+        const pct = total ? Math.round((100 * (st.linked || 0)) / total) : 0;
+        const ratio = s.partial || !s.previous ? el("span", { class: "hint" }, s.partial ? "" : "first: full copy")
+          : el("span", { class: `ratio ${pct < 70 ? "low" : ""}`, title: "share of files hard-linked to the previous snapshot" },
+              el("span", { class: "bar" }, el("i", { style: `width:${pct}%` })), `${pct}%`);
+        const detail = el("tr", { class: "problems", hidden: "" }, el("td", { colspan: "8" }, problemList(s, st)));
+        const row = el("tr", {},
+          el("td", { class: "mono" }, stampText(s.stamp)),
+          el("td", {}, s.partial ? el("span", { class: "tag warn" }, "unfinished") : el("span", { class: "tag" }, s.kind || "?"),
+            st.errors ? [" ", el("button", { class: "tag err", "aria-expanded": "false", title: "Show the files that could not be read",
+              onclick: (ev) => { const open = detail.hidden; detail.hidden = !open; ev.currentTarget.setAttribute("aria-expanded", open); } },
+              `${st.errors} error${st.errors > 1 ? "s" : ""} ▾`)] : null),
+          el("td", { class: "num" }, fmt(st.linked)), el("td", {}, ratio),
+          el("td", { class: "num" }, fmt(st.copied)), el("td", { class: "num" }, human(st.copied_bytes)),
+          el("td", {}, s.volumes.join(", ")),
+          el("td", { class: "hint" }, (s.source || "").split("/").pop()));
+        return st.errors ? [row, detail] : [row];
+      });
+      out.append(el("div", { class: "table-wrap" }, el("table", {},
+        el("thead", {}, el("tr", {}, el("th", {}, "Snapshot"), el("th", {}, "Status"), el("th", { class: "num" }, "Linked"), el("th", {}, "Reused"),
+          el("th", { class: "num" }, "Copied"), el("th", { class: "num" }, "New data"), el("th", {}, "Volumes"), el("th", {}, "Source"))),
+        el("tbody", {}, rows))));
+    }
+    $("archive-status").textContent = `Updated ${new Date().toLocaleTimeString()}. Run Disk usage for the real size.`;
+  } catch (e) { out.replaceChildren(msg("err", e.message)); }
+}
+$("archive-refresh").onclick = refreshArchive;
+function problemList(s, st) {
+  if (!s.problems) return el("div", { class: "hint" }, "This snapshot was made before timak recorded error messages; they are only in the log of that extract run.");
+  const more = st.errors - s.problems.length;
+  return el("div", {},
+    el("div", { class: "hint" }, "Could not be read from the backup, so missing from this snapshot:"),
+    el("ul", {}, s.problems.map((p) => el("li", {}, p))),
+    more > 0 ? el("div", { class: "hint" }, `… and ${more} more`) : null);
+}
+
+// --- file picker ------------------------------------------------------------------------------
+let pick = null;
+const PICK = {
+  source: { title: "Choose a backup: disk image, drive or folder", files: (e) => e.image, folder: true, done: (p) => addSource(p) },
+  archive: { title: "Choose the archive folder", files: () => false, folder: true, done: (p) => { $("archive").value = p; save(); } },
+  "other-archive": { title: "Choose the other archive", files: () => false, folder: true, done: (p) => { $("other-archive").value = p; save(); } },
+  rules: { title: "Choose or name a rules file", files: (e) => e.name.endsWith(".toml"), folder: false, name: true,
+    done: (p) => { $("rules").value = p; save(); $("rules").dispatchEvent(new Event("change")); } },
+};
+async function browseTo(path) {
+  try {
+    const b = await api("/api/browse" + (path ? "?path=" + encodeURIComponent(path) : ""));
+    pick.path = b.path; pick.chosen = null;
+    $("picker-path").textContent = b.path;
+    $("picker-places").replaceChildren(...b.places.map((p) => el("button", { onclick: () => browseTo(p.path) }, p.name)),
+      b.parent ? el("button", { onclick: () => browseTo(b.parent) }, "↑ Up") : null);
+    const list = $("picker-list");
+    list.replaceChildren();
+    for (const e of b.entries) {
+      if (!e.dir && !pick.cfg.files(e)) continue;
+      const btn = el("button", {}, el("span", { class: "ico" }, e.dir ? "▸" : e.image ? "◉" : "≡"), e.name);
+      btn.onclick = () => {
+        if (e.dir) return browseTo(e.path);
+        list.querySelectorAll(".chosen").forEach((x) => x.classList.remove("chosen"));
+        btn.classList.add("chosen"); pick.chosen = e.path;
+        $("picker-ok").textContent = pick.cfg.folder ? `Use ${e.name}` : "Use file";
+        if (pick.cfg.name) $("picker-name").value = e.name;
+      };
+      btn.ondblclick = () => { if (!e.dir) finishPick(e.path); };
+      list.append(btn);
+    }
+    if (!list.children.length) list.append(el("div", { class: "empty-state" }, "Nothing to choose here."));
+    $("picker-ok").textContent = pick.cfg.folder ? "Use this folder" : "Use file";
+  } catch (e) { $("picker-path").textContent = e.message; }
+}
+function finishPick(path) { pick.cfg.done(path); $("picker").close(); }
+document.querySelectorAll("[data-browse]").forEach((b) => b.onclick = () => {
+  const kind = b.dataset.browse, cfg = PICK[kind];
+  pick = { cfg, path: null, chosen: null };
+  $("picker-title").textContent = cfg.title;
+  $("picker-name").style.display = cfg.name ? "" : "none";
+  $("picker-name").value = "";
+  const current = kind === "source" ? $("source-input").value.trim() : $(kind).value.trim();
+  browseTo(current && current.startsWith("/") ? current : null);
+  $("picker").showModal();
+});
+$("picker-cancel").onclick = () => $("picker").close();
+$("picker-ok").onclick = () => {
+  if (pick.cfg.name) {
+    const name = $("picker-name").value.trim();
+    if (!name) { $("picker-name").focus(); return; }
+    return finishPick(name.startsWith("/") ? name : `${pick.path.replace(/\/$/, "")}/${name.endsWith(".toml") ? name : name + ".toml"}`);
+  }
+  finishPick(pick.chosen || pick.path);
+};
+$("picker-name").addEventListener("keydown", (e) => { if (e.key === "Enter") $("picker-ok").click(); });
+
+// --- start ----------------------------------------------------------------------------------------
+(async () => {
+  load();
+  if (!TOKEN) { $("global-msg").append(msg("err", "This page needs the address printed by `timak serve` (it ends with #token=…).")); return; }
+  try {
+    const st = await loadState();
+    if (st.job) {
+      jobNext = 0;
+      const j = await api("/api/job?since=0");
+      showJob(j, false);
+      if (j.status === "running" || j.status === "stopping") { pollJob(); return showTab("run"); }
+    }
+  } catch (e) { $("global-msg").append(msg("err", e.message)); }
+  let tab = "snapshots";
+  try { tab = localStorage.getItem("timak-tab") || tab; } catch {}
+  if ($(tab)) showTab(tab);
+})();
+</script>
+</body>
+</html>

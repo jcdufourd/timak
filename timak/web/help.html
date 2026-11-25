@@ -1,0 +1,366 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Timak Help</title>
+<style>
+:root {
+  --bg: #f6f6f3; --panel: #ffffff; --panel-2: #f0efea; --text: #1d1d1b; --muted: #6b6a64; --line: #dddcd5;
+  --accent: #2f5fd0; --warn: #a15c00; --warn-bg: #fff4e0; --ok: #1d7a46; --ok-bg: #e7f5ec;
+  --mono: ui-monospace, "SF Mono", Menlo, monospace;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #161615; --panel: #1f1f1d; --panel-2: #282826; --text: #ecebe6; --muted: #9a998f; --line: #34342f;
+    --accent: #7ea2ff; --warn: #f0b45a; --warn-bg: #3a2c12; --ok: #6fd39a; --ok-bg: #173323;
+    color-scheme: dark;
+  }
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--text); font: 16px/1.6 -apple-system, BlinkMacSystemFont, "Helvetica Neue", sans-serif; }
+main { max-width: 760px; margin: 0 auto; padding: 28px 24px 64px; }
+header { display: flex; align-items: center; gap: 16px; margin-bottom: 8px; flex-wrap: wrap; }
+header img { width: 160px; height: 160px; margin: -16px; }
+header .lead { margin: 6px 0 0; }
+h1 { font-size: 28px; margin: 0; letter-spacing: -0.01em; }
+h2 { font-size: 21px; margin: 44px 0 10px; padding-top: 12px; border-top: 1px solid var(--line); }
+h3 { font-size: 17px; margin: 26px 0 6px; }
+p, li { max-width: 68ch; }
+li { margin: 5px 0; }
+a { color: var(--accent); }
+code, kbd { font-family: var(--mono); font-size: 0.88em; background: var(--panel-2); border: 1px solid var(--line); border-radius: 4px; padding: 0 4px; }
+.lead { font-size: 18px; color: var(--muted); margin-top: 4px; }
+.ui { font-weight: 600; white-space: nowrap; }
+.note, .warn, .good { border-radius: 8px; padding: 12px 16px; margin: 16px 0; border: 1px solid var(--line); background: var(--panel); }
+.warn { background: var(--warn-bg); border-color: transparent; }
+.warn b:first-child { color: var(--warn); }
+.good { background: var(--ok-bg); border-color: transparent; }
+.good b:first-child { color: var(--ok); }
+.note > :first-child, .warn > :first-child, .good > :first-child { margin-top: 0; }
+.note > :last-child, .warn > :last-child, .good > :last-child { margin-bottom: 0; }
+nav.toc { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 14px 20px; margin: 22px 0; }
+nav.toc b { display: block; margin-bottom: 4px; }
+nav.toc ol { margin: 0; padding-left: 22px; }
+nav.toc li { margin: 2px 0; }
+ol.steps { counter-reset: step; list-style: none; padding-left: 0; }
+ol.steps > li { counter-increment: step; position: relative; padding-left: 44px; margin: 14px 0; }
+ol.steps > li::before { content: counter(step); position: absolute; left: 0; top: 0; width: 30px; height: 30px; border-radius: 50%; background: var(--accent); color: var(--bg); font-weight: 700; display: flex; align-items: center; justify-content: center; font-size: 15px; }
+table { border-collapse: collapse; width: 100%; margin: 12px 0; font-size: 15px; }
+th, td { text-align: left; vertical-align: top; padding: 8px 10px; border-bottom: 1px solid var(--line); }
+th { color: var(--muted); font-weight: 600; font-size: 13px; text-transform: uppercase; letter-spacing: 0.04em; }
+dl dt { font-weight: 600; margin-top: 12px; }
+dl dd { margin: 2px 0 0 0; color: var(--text); }
+.top { font-size: 13px; color: var(--muted); }
+@media (max-width: 600px) { main { padding: 20px 16px 48px; } h1 { font-size: 24px; } }
+</style>
+</head>
+<body>
+<main>
+<header><img src="/icon.svg" alt="" width="160" height="160"><div><h1>Timak Help</h1><p class="lead">How to turn old Time Machine backups into a small archive of your own files, step by step.</p></div></header>
+<nav class="toc" aria-label="Contents">
+  <b>Contents</b>
+  <ol>
+    <li><a href="#what">What Timak does</a></li>
+    <li><a href="#words">A few words you will see</a></li>
+    <li><a href="#before">Before you start</a></li>
+    <li><a href="#screen">The Timak window</a></li>
+    <li><a href="#first">Your first archive, step by step</a></li>
+    <li><a href="#more">Adding more backups later</a></li>
+    <li><a href="#back">Getting your files back</a></li>
+    <li><a href="#smaller">Making the archive smaller</a></li>
+    <li><a href="#rules">Rules: choosing what to keep</a></li>
+    <li><a href="#copy">Keeping a second copy</a></li>
+    <li><a href="#problems">When something goes wrong</a></li>
+    <li><a href="#safety">What Timak will and will not touch</a></li>
+    <li><a href="#buttons">Every button, in short</a></li>
+  </ol>
+</nav>
+
+<h2 id="what">1. What Timak does</h2>
+<p>Time Machine is the backup tool built into every Mac. Over the years it fills disks with copies of
+everything: your documents and photos, but also macOS itself, all your applications, and caches, which
+are files your Mac can make again at any time.</p>
+<p>Timak reads those old backups and copies <b>only your own files</b> into a new place called the
+<b>archive</b>: documents, photos, music, mail, projects, as they were on each backup date. It leaves out
+macOS, the applications and the caches. A file that did not change from one backup to the next is
+stored only once. The result is usually much smaller than the backups it came from.</p>
+<p>The archive is made of ordinary folders. You can open it in the Finder and copy files out of it like
+from any other folder. You do not need Time Machine, or even Timak, to read it later.</p>
+<div class="good"><p><b>Your backups are safe.</b> Timak only <i>reads</i> your old backups. It never changes or
+deletes anything in them.</p></div>
+
+<h2 id="words">2. A few words you will see</h2>
+<dl>
+  <dt>Backup disk</dt>
+  <dd>The external disk Time Machine used to save backups on. Sometimes the backups are instead inside one big file
+  ending in <code>.dmg</code>, <code>.sparseimage</code> or <code>.sparsebundle</code>: that is a <b>disk image</b>,
+  a whole disk stored in a file.</dd>
+  <dt>Snapshot</dt>
+  <dd>One backup, as it was at one date and time. A backup disk usually holds many snapshots: one per hour, day or week.</dd>
+  <dt>Source</dt>
+  <dd>What Timak reads from: a backup disk, a disk image, or a folder copied out of a backup.</dd>
+  <dt>Archive</dt>
+  <dd>What Timak writes: one folder per Mac, and inside it one folder per snapshot, named after its date,
+  such as <code>2019-05-12-093000</code> (12 May 2019 at 09:30:00).</dd>
+  <dt>Volume</dt>
+  <dd>A disk as the Mac shows it, with a name: “Macintosh HD”, “Data”, “My Passport”… A backup can hold several volumes.</dd>
+  <dt>Rules</dt>
+  <dd>The list that tells Timak what to keep and what to leave out. Timak comes with good rules already; you
+  only need your own if you want to change them.</dd>
+  <dt>Dry run</dt>
+  <dd>A rehearsal: Timak shows what it <i>would</i> do, but does nothing. Always safe.</dd>
+  <dt>Hard link</dt>
+  <dd>The trick that saves space: when a file is the same in two snapshots, the second snapshot does not get a
+  copy, it gets a second name for the same file. Both folders show the file, but it is stored once.</dd>
+</dl>
+
+<h2 id="before">3. Before you start</h2>
+<h3>What you need</h3>
+<ul>
+  <li><b>The old backup</b>: the Time Machine disk, plugged in, or the disk image file.</li>
+  <li><b>A disk for the archive</b>, with enough free space. The archive needs about the size of your own files,
+  plus what changed between backups. If your home folder was 200 GB, plan for 250 to 400 GB. A
+  <a href="#smaller">Scan</a> tells you more precisely before anything is written.</li>
+  <li><b>Time.</b> Extracting a large backup can take hours, or a whole night. It can be stopped and
+  continued later.</li>
+</ul>
+<div class="warn"><p><b>Do not use the disk Time Machine is still using.</b> If the backup disk is still chosen in
+System Settings › General › Time Machine, remove it there first (or turn Time Machine off) so that it does not
+start a new backup, or delete old ones, while Timak is reading.</p></div>
+
+<h3 id="fda">Give Timak “Full Disk Access” (once)</h3>
+<p>macOS protects Time Machine backups. Without this permission, Timak cannot look inside them.</p>
+<ol class="steps">
+  <li>Open the Apple menu  › <span class="ui">System Settings…</span></li>
+  <li>Click <span class="ui">Privacy &amp; Security</span> in the list on the left, then <span class="ui">Full Disk Access</span> on the right.</li>
+  <li>Find <b>Timak</b> in the list and turn its switch on. If it is not in the list, click <span class="ui">+</span>,
+  open the <span class="ui">Applications</span> folder, choose <b>Timak</b>, and click <span class="ui">Open</span>.</li>
+  <li>macOS asks for your password: type the password you use to log in to your Mac.</li>
+  <li>Quit Timak (<kbd>⌘</kbd> <kbd>Q</kbd>) and open it again.</li>
+</ol>
+<p>At the top right of the Timak window, a green <span class="ui">Full Disk Access</span> label means it worked.</p>
+
+<h3>The password when Timak starts</h3>
+<p>When it opens, Timak asks for your Mac password. It needs it to open some kinds of backups (APFS backups
+from macOS 11 Big Sur and later) and to keep the owner of each file. If you click <span class="ui">Cancel</span>, Timak
+offers to start without it; that is fine for most older backups.</p>
+
+<h3>Keep the Mac awake</h3>
+<p>Plug your Mac into power. If it goes to sleep, the work stops. In System Settings, under
+<span class="ui">Battery</span> (or <span class="ui">Energy</span>), turn on the option that prevents automatic sleeping
+when on power, for the time of the extraction. The screen may turn off; that is fine.</p>
+
+<h2 id="screen">4. The Timak window</h2>
+<ul>
+  <li><b>At the top</b>: the Timak name and version, the <span class="ui">Help</span> button that opened this page, and
+  three labels. Green means good: <span class="ui">running as root</span> (the password was given),
+  <span class="ui">Full Disk Access</span>, and <span class="ui">rsync 3</span> (a tool Timak uses to copy). Point at an orange
+  label to see what to do about it.</li>
+  <li><b>Backups and archive</b>: where you say what to read (<span class="ui">Sources</span>), where to write
+  (<span class="ui">Archive folder</span>), and, if you have one, your own <span class="ui">Rules file</span>.
+  <span class="ui">More options</span> holds settings most people never need.</li>
+  <li><b>Four tabs</b>:
+    <ul>
+      <li><span class="ui">Snapshots</span>: what Timak found in your backups.</li>
+      <li><span class="ui">Rules</span>: view or edit what is kept and left out.</li>
+      <li><span class="ui">Run</span>: the buttons that do the work, and below them a box showing progress.</li>
+      <li><span class="ui">Archive</span>: what is already in your archive.</li>
+    </ul>
+  </li>
+</ul>
+
+<h2 id="first">5. Your first archive, step by step</h2>
+<ol class="steps">
+  <li><b>Plug in your disks.</b> Connect the old backup disk and the disk that will hold the archive. Wait until
+  both show up in the Finder sidebar.</li>
+
+  <li><b>Add the backup as a source.</b> In <span class="ui">Sources</span>, click <span class="ui">Browse…</span>, go to the backup
+  disk, and choose it. On most backup disks, choose the disk itself or the <code>Backups.backupdb</code> folder on it.
+  If your backup is a disk image file, choose that file. Click <span class="ui">Add</span>.
+  <br>Shortcut: you can also drag the disk or the file from the Finder onto the Timak window.</li>
+
+  <li><b>Choose where the archive goes.</b> In <span class="ui">Archive folder</span>, click <span class="ui">Browse…</span>, go to the
+  archive disk, and type a short new name such as <code>tm</code> or <code>old-backups</code>. The name must not exist
+  yet: Timak creates it.
+    <div class="note"><p>On most modern disks (formatted as <b>APFS</b>), Timak does not make a plain folder but a disk
+    image named, for example, <code>tm.sparsebundle</code>. It is a single file-like item that holds the whole archive and grows
+    as needed. You keep using the name <code>tm</code> in Timak; it finds the image by itself. To look inside it in the
+    Finder, double-click it.</p></div></li>
+
+  <li><b>Look at what is there.</b> Click the <span class="ui">Snapshots</span> tab, then <span class="ui">List snapshots</span>. You see
+  each backup date, the Mac it came from and its volumes. Volumes marked to be extracted are the ones holding your
+  files. If you see an orange warning about a volume being <i>skipped</i>, read it: it says how to keep that volume
+  if it matters to you.</li>
+
+  <li><b>Rehearse with Scan.</b> Open the <span class="ui">Run</span> tab and click <span class="ui">Scan</span>. Nothing is written. At the
+  end, Timak shows how much would be kept, and how much each rule leaves out. If something you care about is left out,
+  see <a href="#rules">Rules</a> before going on.</li>
+
+  <li><b>Extract.</b> Click <span class="ui">Extract</span>. A line appears for each snapshot, and the bar shows progress. You can
+  keep using your Mac meanwhile, but do not unplug the disks.
+    <div class="note"><p><b>Need to stop?</b> Click <span class="ui">Stop</span>. Later, click <span class="ui">Extract</span> again with the
+    same settings: Timak continues where it stopped. Snapshots already finished are not done again.</p></div></li>
+
+  <li><b>Check with Verify.</b> When Extract says <code>done</code>, click <span class="ui">Verify</span>. Timak compares the
+  archive with the backup and lists any difference. A few unreadable files (often system files locked by macOS) are
+  normal. The full report is saved in the archive, in a file ending in <code>.timakreport</code>.</li>
+
+  <li><b>Look at the result.</b> Open the <span class="ui">Archive</span> tab and click <span class="ui">Refresh</span>: you see each Mac and
+  each snapshot with what was copied. In the Finder, open the archive (double-click <code>tm.sparsebundle</code> if it is a
+  disk image) to see the dated folders.</li>
+</ol>
+<div class="warn"><p><b>Keep the old backup disk</b> until Verify is done and you have looked at the archive yourself.
+Only then decide whether to reuse that disk.</p></div>
+
+<h2 id="more">6. Adding more backups later</h2>
+<p>An archive can hold backups from several disks and several Macs. To add another backup, choose it as the source
+(remove the old one with the <span class="ui">✕</span> next to it), keep the <b>same archive folder</b>, and click
+<span class="ui">Extract</span>. Snapshots already in the archive are skipped, and unchanged files are linked to the previous
+snapshot, so the archive grows only by what is new.</p>
+<p>If the same Mac had a different name in an older backup, or its disk was called differently, use
+<span class="ui">Rename machines</span> or <span class="ui">Rename volumes</span> in <span class="ui">More options</span> so that everything lines up
+under one name. Afterwards, <span class="ui">Dedupe</span> (see <a href="#smaller">below</a>) catches files that are the same but
+came from different disks.</p>
+
+<h2 id="back">7. Getting your files back</h2>
+<ol class="steps">
+  <li>Plug in the archive disk and open it in the Finder. If the archive is a <code>.sparsebundle</code>, double-click it: it
+  appears in the Finder sidebar like a disk.</li>
+  <li>Open the folder of the Mac, then the folder of the date you want, for example <code>2019-05-12-093000</code>.</li>
+  <li>Inside, the folders look like on that Mac at that date: <code>Macintosh HD › Users › <i>your name</i> › Documents</code>…</li>
+  <li>Drag the files you want to your Desktop or anywhere else. This <b>copies</b> them; the archive is not changed.</li>
+  <li>When done with a disk image, eject it: click the ⏏ next to its name in the Finder sidebar.</li>
+</ol>
+<p>Looking for a file but not sure of the date? Open the newest snapshot first: files that never changed are in every
+later snapshot too.</p>
+
+<h2 id="smaller">8. Making the archive smaller</h2>
+<p>These buttons are all in the <span class="ui">Run</span> tab.</p>
+<h3>See what takes the space</h3>
+<ul>
+  <li><span class="ui">Kinds</span> shows how much space mail, photos, videos, music, documents and so on take. Nothing is changed.</li>
+  <li><span class="ui">Biggest</span> lists the biggest files and folders. Next to each folder, it suggests the rule that would
+  leave it out. Nothing is changed.</li>
+  <li><span class="ui">Disk usage</span> gives the real size of the archive.</li>
+</ul>
+<h3>Remove what you do not want: Prune</h3>
+<p>Say <span class="ui">Biggest</span> shows an old virtual machine of 60 GB you never want back. You can tell Timak to leave it out
+and remove it from the snapshots already extracted:</p>
+<ol class="steps">
+  <li>Add a rule for it in the <span class="ui">Rules</span> tab and click <span class="ui">Save</span> (see <a href="#rules">Rules</a>). Your rules file
+  must be set in <span class="ui">Rules file</span> at the top.</li>
+  <li>In the <span class="ui">Run</span> tab, leave <span class="ui">Dry run</span> <b>ticked</b> under <span class="ui">Prune</span>, and click
+  <span class="ui">Prune</span>. Timak lists everything it would remove, and how much space that would free.</li>
+  <li>Read the list carefully. If it is right, untick <span class="ui">Dry run</span> and click <span class="ui">Prune</span> again. Timak asks you to
+  confirm.</li>
+</ol>
+<div class="warn"><p><b>Prune really deletes</b> from the archive, and this cannot be undone. Something removed can only come back by
+extracting again from the original backup. Always read the dry run first.</p></div>
+<h3>Merge identical files: Dedupe</h3>
+<p><span class="ui">Dedupe</span> finds files that are exactly the same but stored twice, for example a photo you moved to another
+folder, or backups of the same Mac from two disks, and keeps one copy. Nothing you see changes, only the space used.
+Run it with <span class="ui">Dry run</span> ticked first to see how much it would save.</p>
+
+<h2 id="rules">9. Rules: choosing what to keep</h2>
+<p>The built-in rules keep your home folder and leave out applications, macOS, caches, and similar files that can be
+made again. Most people never need to change them.</p>
+<h3>Making your own rules file</h3>
+<ol class="steps">
+  <li>Open the <span class="ui">Rules</span> tab and click <span class="ui">Start from built-in rules</span>. The text of the rules appears.</li>
+  <li>At the top of the window, in <span class="ui">Rules file</span>, click <span class="ui">Browse…</span>, pick a folder such as your Documents
+  folder, type a name such as <code>my-rules.toml</code>, and confirm.</li>
+  <li>Change the text (see the examples below) and click <span class="ui">Save</span>. Timak checks the text and tells you if
+  something is wrong.</li>
+</ol>
+<h3>Reading and writing a rule</h3>
+<p>Each rule is one line between quotes, ending with a comma. A <code>-</code> means “leave out”, a <code>+</code> means
+“keep”. The first rule that matches a file decides.</p>
+<table>
+  <thead><tr><th>Rule</th><th>Meaning</th></tr></thead>
+  <tbody>
+    <tr><td><code>"- ~/Movies/",</code></td><td>Leave out the Movies folder of every user. <code>~</code> means “each home folder”.</td></tr>
+    <tr><td><code>"- ~/Downloads/",</code></td><td>Leave out the Downloads folders.</td></tr>
+    <tr><td><code>"- *.iso",</code></td><td>Leave out every file whose name ends in <code>.iso</code>. <code>*</code> means “anything”.</td></tr>
+    <tr><td><code>"+ ~/Library/Mail/",</code></td><td>Keep the mail, even if a rule further down would leave it out.</td></tr>
+  </tbody>
+</table>
+<p>A <code>/</code> at the end means “a folder”. When a folder is left out, everything inside it goes too: a <code>+</code> rule cannot bring back a file inside it. After changing the rules, run <span class="ui">Scan</span> to see their effect
+before extracting. Rules only apply to snapshots extracted <i>afterwards</i>; to apply them to snapshots already in the
+archive, use <a href="#smaller">Prune</a>.</p>
+
+<h2 id="copy">10. Keeping a second copy</h2>
+<p>Any disk can fail one day. Once your archive is complete and verified, copy it to a second disk and keep that disk
+somewhere else.</p>
+<ul>
+  <li>If the archive is a <code>.sparsebundle</code>, eject it first, then drag it in the Finder to the other disk.
+  It is one item, so the copy keeps everything as it is.</li>
+  <li>If the archive is a plain folder, a Finder copy would store every snapshot in full and could take many times
+  the space. Ask someone comfortable with the Terminal to copy it with <code>rsync -aH</code>, which keeps the
+  space-saving links.</li>
+</ul>
+
+<h2 id="problems">11. When something goes wrong</h2>
+<table>
+  <thead><tr><th>What you see</th><th>What to do</th></tr></thead>
+  <tbody>
+    <tr><td>“Operation not permitted”, or an orange <span class="ui">no Full Disk Access</span> label</td>
+        <td>Give Timak Full Disk Access (<a href="#fda">see above</a>), then quit and reopen Timak.</td></tr>
+    <tr><td>An orange <span class="ui">rsync 3 missing</span> label</td>
+        <td>Timak needs a copy tool installed with Homebrew. Ask someone to run <code>brew install rsync</code> in the Terminal.</td></tr>
+    <tr><td>“timak is not running” or “not answering”</td>
+        <td>Click <span class="ui">Start timak</span>. If it keeps happening, use the <span class="ui">Server</span> menu ›
+        <span class="ui">Show Server Log</span> and send the log to whoever helps you.</td></tr>
+    <tr><td>Extract stopped (disk unplugged, Mac went to sleep, you clicked Stop)</td>
+        <td>Plug everything back in and click <span class="ui">Extract</span> again with the same source and archive. It continues.</td></tr>
+    <tr><td>The archive disk is full</td>
+        <td>Stop, free space or choose a bigger disk. <span class="ui">Kinds</span> and <span class="ui">Biggest</span> show what to leave out.</td></tr>
+    <tr><td>A volume is “SKIPPED”</td>
+        <td>It holds no home folders, so Timak does not know it should keep it. If it matters, the warning gives the line to add
+        to your rules file.</td></tr>
+    <tr><td>A warning about case (README and readme)</td>
+        <td>The backup tells apart names that differ only by capital letters, the archive disk does not. Let Timak make the
+        archive as a disk image on an APFS disk, which avoids it.</td></tr>
+    <tr><td>Some files are listed as unreadable</td>
+        <td>Usually locked system files, of no use to you. If they are your own files, check Full Disk Access and that the
+        password was given at start.</td></tr>
+    <tr><td>The window shows nothing or seems stuck</td>
+        <td>Use <span class="ui">View</span> › <span class="ui">Reload Page</span> (<kbd>⌘</kbd> <kbd>R</kbd>). A running command is not interrupted.</td></tr>
+  </tbody>
+</table>
+
+<h2 id="safety">12. What Timak will and will not touch</h2>
+<ul>
+  <li><b>Your old backups</b>: only read, never changed. Disk images are opened read-only.</li>
+  <li><b>Scan, Verify, Biggest, Kinds, Disk usage, Compare, and any Dry run</b>: only read. They may save a small report
+  file in the archive.</li>
+  <li><b>Extract</b>: adds new snapshots to the archive. It never changes a snapshot that is finished.</li>
+  <li><b>Dedupe</b> without dry run: replaces identical copies by links. Your files and their content stay.</li>
+  <li><b>Prune</b> without dry run: <b>deletes</b> from the archive what your rules now leave out. This is the only button
+  that removes your data, and it asks first.</li>
+</ul>
+<p>Quitting Timak while a command runs: Timak asks whether to stop it or let it finish in the background. Opening Timak
+again reconnects to it.</p>
+
+<h2 id="buttons">13. Every button, in short</h2>
+<table>
+  <thead><tr><th>Button</th><th>What it does</th><th>Changes the archive?</th></tr></thead>
+  <tbody>
+    <tr><td class="ui">List snapshots</td><td>Shows the backups found in the sources.</td><td>No</td></tr>
+    <tr><td class="ui">Scan</td><td>Rehearsal: how much would be kept and left out.</td><td>No</td></tr>
+    <tr><td class="ui">Extract</td><td>Copies your files into the archive.</td><td>Adds to it</td></tr>
+    <tr><td class="ui">Verify</td><td>Compares the archive with the backups.</td><td>No (saves a report)</td></tr>
+    <tr><td class="ui">Dedupe</td><td>Stores identical files once.</td><td>Only without Dry run</td></tr>
+    <tr><td class="ui">Prune</td><td>Removes what the rules now leave out.</td><td><b>Deletes</b>, only without Dry run</td></tr>
+    <tr><td class="ui">Biggest</td><td>Biggest files and folders.</td><td>No (saves a report)</td></tr>
+    <tr><td class="ui">Kinds</td><td>Space by kind of file.</td><td>No (saves a report)</td></tr>
+    <tr><td class="ui">Compare</td><td>What merging another archive into this one would take.</td><td>No</td></tr>
+    <tr><td class="ui">Disk usage</td><td>Real size of the archive.</td><td>No</td></tr>
+    <tr><td class="ui">Stop</td><td>Stops the running command; Extract can continue later.</td><td>—</td></tr>
+  </tbody>
+</table>
+<p class="top"><a href="#">Back to the top</a></p>
+</main>
+</body>
+</html>
