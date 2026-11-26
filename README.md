@@ -63,8 +63,6 @@ root. Double-click it to browse it in Finder. See [The archive disk](#the-archiv
   is already attached.
 - Legacy HFS+ backups (`Backups.backupdb`) are the main target, and are
   tested with real Time Machine directory hard links.
-- **APFS backups (macOS 11 and later) are experimental.** Detection has been
-  tried on a real image, extraction not yet. See [Source formats](#source-formats).
 - Version 1.1.0. The command-line options and the archive layout are not
   expected to change much, but there is no promise of stability yet.
 
@@ -457,7 +455,7 @@ distinct file in memory.
 |---|---|
 | Legacy HFS+ backups (`Backups.backupdb`), in a disk image or on a drive | supported, tested with real directory hard links |
 | A single snapshot copied out as a folder (e.g. `Backup20241029/Data/Users/…`, `Backup20241029/Large/…`, or a folder that itself contains `Users/`) | supported. The date comes from the folder name, or `--stamp 2024-10-29`. The machine name is read from the backup when possible |
-| APFS backups (macOS 11+), in a disk image, sparsebundle or on a drive | **experimental**, needs **sudo**. Snapshots are found with `diskutil apfs listSnapshots` and mounted read-only by timak with `mount_apfs -s`. Detection has been tried on a real image, extraction not yet |
+| APFS backups (macOS 11+), in a disk image, sparsebundle or on a drive | needs **sudo**. Snapshots are found with `diskutil apfs listSnapshots` and mounted read-only by timak with `mount_apfs -s`. |
 
 For APFS backups, run timak as root: `sudo /opt/homebrew/bin/python3 -m timak …`.
 APFS backup volumes are often **case-sensitive**. The disk image timak makes
